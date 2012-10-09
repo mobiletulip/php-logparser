@@ -5,6 +5,7 @@
  * @link https://github.com/mobiletulip/php-logparser
  * @copyright Copyright (c) 2012 Mobile Tulip (http://mobiletulip.com/)
  * @license https://github.com/mobiletulip/php-logparser/license/new-bsd
+ * @author Thijs Lensselink <thijs.lensselink@mobiletulip.com>
  * @package SmppBoxParser
  */
 
@@ -16,10 +17,34 @@
  */
 Class LogParser 
 {
+	/**
+	 * Parser instance
+	 * 
+	 * @var LogParser
+	 */
 	protected static $_instance = null;
+	
+	/**
+	 * SimpleXmlElement config
+	 * 
+	 * @var SimpleXmlElement
+	 */
 	protected $_config = null;
+	
+	/**
+	 * State file path
+	 * 
+	 * @var string
+	 */
 	protected $_stateFile = null;
 	
+	/**
+	 * Setup some basic stuff here
+	 * 
+	 * @param string $config
+	 * @throws Exception
+	 * @return void
+	 */
 	protected function __construct($config = null) 
 	{
 		if (is_null($config)) {
@@ -38,6 +63,12 @@ Class LogParser
 		$this->_setStateFile();
 	}
 	
+	/**
+	 * Return an instance of LogParser
+	 * 
+	 * @param string $config
+	 * @return LogParser
+	 */
 	public static function getInstance($config = null) 
 	{
 		if (is_null(self::$_instance)) {
@@ -46,6 +77,11 @@ Class LogParser
 		return self::$_instance;
 	}
 	
+	/**
+	 * Run the parser and use logtail to fetch data from the logfile
+	 * 
+	 * @return array
+	 */
 	public function run() 
 	{
 		$stats = array();
@@ -72,6 +108,11 @@ Class LogParser
 		return $stats;
 	}
 	
+	/**
+	 * Create a stats file in /tmp if it does not exist
+	 * 
+	 * @return void
+	 */
 	private function _setStateFile() 
 	{
 		if (is_null($this->_stateFile)) {
@@ -82,6 +123,13 @@ Class LogParser
 		}
 	}
 	
+	/**
+	 * Use sockets to send data to a graphite server
+	 * 
+	 * @param array $stats
+	 * @throws Exception
+	 * @return void
+	 */
 	private function _sendToGraphite($stats) 
 	{
 		$socket = fsockopen($this->_config->graphite->host, (integer) $this->_config->graphite->port, $errno, $errstr, (integer) $this->_config->graphite->timeout);
@@ -94,6 +142,13 @@ Class LogParser
 		fclose($socket);
 	}
 	
+	/**
+	 * Becasue the config is XML. And XML consists of strings. We use thi smethod
+	 * to check for boolean states
+	 * 
+	 * @param string $state
+	 * @return boolean
+	 */
 	private function _isEnabled($state) 
 	{
 		switch ($state) {

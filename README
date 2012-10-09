@@ -1,1 +1,32 @@
 A simple logfile parser for kannel SMPP logfiles that sends statistics to Graphite
+
+Running the parser:
+
+try {
+	$parser = LogParser::getInstance('../config/smpp-failed.xml');
+	$parser->run();
+} catch(Exception $e) {
+	echo $e->getMessage();
+}
+
+Where ../config/smpp-failed.xml looks like:
+
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+	<name>smpp-failed-logging</name>
+    <log_file>./smppbox_access.txt</log_file>
+    <logtail_bin>/usr/sbin/logtail2</logtail_bin>
+    <regexp>/^(\S+) (\S+) (\S+) FAILED .*/</regexp>
+    
+    <regexp_store>3</regexp_store>
+    <regexp_match>3</regexp_match>
+    
+    <graphite>
+        <enabled>true</enabled>
+        <label>server.-server-string-.smppbox.failures.</label>
+        <host>localhost</host>
+        <port>2003</port>
+        <timeout>30</timeout>
+        <increment>1</increment>
+    </graphite>
+</config>
