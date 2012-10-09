@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+	<name>smpp-status-logging</name>
+    <log_file>./smppbox.log</log_file>
+    <logtail_bin>/usr/sbin/logtail2</logtail_bin>
+    <regexp>/^(\S+) (\S+) \[(\S+)\] \[(\S+)\] ERROR: \[.* (\d{1,3}): .*\]: /</regexp>
+
+    <regexp_store>5</regexp_store>
+    <regexp_match>5</regexp_match>
+    
+    <graphite>
+        <enabled>true</enabled>
+        <label>server.-server-string-.smppbox.errors.status_</label>
+        <host>localhost</host>
+        <port>2003</port>
+        <timeout>30</timeout>
+        <increment>1</increment>
+    </graphite>
+</config>
