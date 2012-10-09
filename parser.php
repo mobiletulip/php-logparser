@@ -26,10 +26,45 @@ Class SmppBoxParser
 	/**
 	 * Location of the Apache2 logtail2 binary
 	 * 
-	 * @var unknown_type
+	 * @var string
 	 */
 	private static $_logtailBin = '/usr/sbin/logtail2';
-
+	
+	/**
+	 * Logfile line parsing regular expression
+	 * 
+	 * @var string
+	 */
+	private static $_lineRegexp = '/^(\S+) (\S+) \[(\S+)\] \[(\S+)\] ERROR: \[.* (?P<code>\d{1,3}): .*\]: /';
+	
+	/**
+	 * Graphit elogging string
+	 * 
+	 * @var string
+	 */
+	private static $_graphiteString = 'server.dc1-sms-1.smppbox.errors.status_';
+	
+	/**
+	 * Graphite host address
+	 * 
+	 * @var string
+	 */
+	private static $_graphiteHost = 'localhost';
+	
+	/**
+	 * Graphite host port
+	 * 
+	 * @var integer
+	 */
+	private static $_graphitePort = 2023;
+	
+	/**
+	 * Graphite socket timeout in seconds
+	 * 
+	 * @var integer
+	 */
+	private static $_graphiteTimeout = 30;
+	
 	/**
 	 * Trigger the parsing process
 	 * 
@@ -51,7 +86,7 @@ Class SmppBoxParser
 			$logOutput = shell_exec($logtail . " -f " . $logfile . " -o " . $stateFile);
 			$outputArray = explode("\n", $logOutput);
 			foreach ($outputArray as $line) {
-				preg_match_all('/^(\S+) (\S+) \[(\S+)\] \[(\S+)\] ERROR: \[.* (?P<code>\d{1,3}): .*\]: /', $line, $matches);
+				preg_match_all(self::$_lineRegexp, $line, $matches);
 				if (isset($matches['code'][0])) {
 					$codes[] = $matches['code'][0];
 				}
@@ -80,11 +115,11 @@ Class SmppBoxParser
 	 */
 	protected static function SendToCurl($code)
 	{
-		$fp = fsockopen("localhost", 2023, $errno, $errstr, 30);
+		$fp = fsockopen(self::$_graphiteHost, self::$_graphitePort, $errno, $errstr, self::$_graphiteTimeout);
 		if (!$fp) {
-			echo "$errstr ($errno)<br />\n";
+			echo "$errstr ($errno)\n";
 		} else {
-			fwrite($fp, "server.dc1-sms-1.smppbox.errors.status 1");
+			fwrite($fp, self::$_graphiteString . $code . " 1 " . time() . "\n");
 			fclose($fp);
 		}
 	}
