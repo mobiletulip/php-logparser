@@ -22,21 +22,28 @@ Class LogParser
 	 * 
 	 * @var LogParser
 	 */
-	protected static $_instance = null;
+	private static $_instance = null;
 	
 	/**
 	 * SimpleXmlElement config
 	 * 
 	 * @var SimpleXmlElement
 	 */
-	protected $_config = null;
+	private $_config = null;
 	
 	/**
 	 * State file path
 	 * 
 	 * @var string
 	 */
-	protected $_stateFile = null;
+	private $_stateFile = null;
+	
+	/**
+	 * Debug switch
+	 * 
+	 * @var boolean
+	 */
+	private $_debug = false;
 	
 	/**
 	 * Setup some basic stuff here
@@ -45,14 +52,10 @@ Class LogParser
 	 * @throws Exception
 	 * @return void
 	 */
-	protected function __construct($config = null) 
+	private function __construct($config = null) 
 	{
-		if (is_null($config)) {
-			throw new Exception("No config file supplied");
-		}
-		
-		if (!file_exists($config)) {
-			throw new Exception("Config file not found");
+		if (is_null($config) || !file_exists($config)) {
+			throw new Exception("Could not find config file");
 		}
 		
 		$this->_config = new SimpleXMLElement(file_get_contents($config));
@@ -60,6 +63,9 @@ Class LogParser
 			throw new Exception("Logtail not found ({$this->_config->logtail_bin}) or not set");
 		}
 		
+		if ($this->_isEnabled($this->_config->debug)) {
+			$this->_debug = true;
+		}
 		$this->_setStateFile();
 	}
 	
@@ -142,7 +148,12 @@ Class LogParser
 			throw new Exception($errstr, $errno);
 		}
 		foreach ($stats as $name => $value) {
-			fwrite($socket, $this->_config->graphite->label . $name . " {$value} " . time() . "\n");
+			if ($this->_debug) {
+				echo date('Y-m-d H:i:s') ." : " . $this->_config->graphite->label . $name . " {$value} " . time() . "\n";
+			}
+			else {
+				fwrite($socket, $this->_config->graphite->label . $name . " {$value} " . time() . "\n");
+			}
 		}
 		fclose($socket);
 	}
