@@ -24,11 +24,14 @@ Where ../config/smpp-failed.xml looks like:
 
 <?xml version="1.0" encoding="UTF-8"?>
 <config>
+    <!-- With debugging enabled no data will be send to Graphite but instead pushed to stdout -->
+    <debug>true</debug>
+    
     <!-- Location where we should store the state file -->
-    <state_file>/state/file/location.state</state_file>
+    <state_file>/tmp/location.state</state_file>
     
     <!-- Location of the logfile -->
-    <log_file>/log/file/location.log</log_file>
+    <log_file>/Dev/LogParser/smppbox_access.txt</log_file>
     
     <!-- Location of the logtail2 binary -->
     <logtail_bin>/usr/sbin/logtail2</logtail_bin>
@@ -46,6 +49,5 @@ Where ../config/smpp-failed.xml looks like:
         <host>localhost</host>
         <port>2003</port>
         <timeout>30</timeout>
-        <increment>1</increment>
     </graphite>
 </config>
