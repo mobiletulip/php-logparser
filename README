@@ -4,7 +4,7 @@ Running the parser:
 
 $ php sample.php --xml sample.xml
 
-A simple cron script example the parser:
+A simple cron script example parser:
 
 $basePath = dirname(__DIR__);
 require_once $basePath . '/lib/Parser.php';
