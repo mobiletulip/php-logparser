@@ -1,27 +1,3 @@
-A simple logfile parser for kannel SMPP logfiles that sends statistics to Graphite
-
-Running the parser:
-
-$ php sample.php --xml sample.xml
-
-A simple cron script example the parser:
-
-$basePath = dirname(__DIR__);
-require_once $basePath . '/lib/Parser.php';
-
-$script = array_shift($argv);
-$switch = array_shift($argv);
-$xmlConfig = array_shift($argv);
-
-try {
-    $parser = LogParser::getInstance($xmlConfig);
-    $parser->run();
-} catch(Exception $e) {
-    echo $e->getMessage();
-}
-
-Where ../config/smpp-failed.xml looks like:
-
 <?xml version="1.0" encoding="UTF-8"?>
 <config>
     <!-- Location where we should store the state file -->

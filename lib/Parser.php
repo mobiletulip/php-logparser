@@ -72,7 +72,8 @@ Class LogParser
 	public static function getInstance($config = null) 
 	{
 		if (is_null(self::$_instance)) {
-			self::$_instance = new self($config);
+			$configPath = dirname(__DIR__)."/config/".$config;
+			self::$_instance = new self($configPath);
 		}
 		return self::$_instance;
 	}
@@ -85,20 +86,20 @@ Class LogParser
 	public function run() 
 	{
 		$stats = array();
-		if (file_exists($this->_config->log_file)) {
-			$logOutput = shell_exec($this->_config->logtail_bin . " -f " . $this->_config->log_file . " -o " . $this->_stateFile);
-			$outputArray = explode("\n", $logOutput);
-			
-			foreach ($outputArray as $line) {
-				preg_match_all((string) $this->_config->regexp, $line, $matches);
-				if (isset($matches[0][0])) {
-					if ($this->_config->regexp_match == $this->_config->regexp_store) {
-						$stats[] = $matches[(integer) $this->_config->regexp_match][0];
-					}
-					else {
-						$stats[] = $matches[(integer) $this->_config->regexp_store][0];
-					}
-				}
+		if (!file_exists($this->_config->log_file)) {
+			throw new Exception("Logfile not found");
+		}
+
+		$logOutput = shell_exec($this->_config->logtail_bin . " -f " . $this->_config->log_file . " -o " . $this->_stateFile);
+		$outputArray = explode("\n", $logOutput);
+		
+		foreach ($outputArray as $line) {
+			preg_match_all((string) $this->_config->regexp, $line, $matches);
+			if (isset($matches[0][0])) {
+				$stats[] = array(
+					'stat' => $matches[(integer) $this->_config->regex_num][0],
+					'time' => $matches[1][0] . " " . $matches[2][0]
+				);
 			}
 		}
 
@@ -116,7 +117,7 @@ Class LogParser
 	private function _setStateFile() 
 	{
 		if (is_null($this->_stateFile)) {
-			$this->_stateFile = "/tmp/{$this->_config->name}.state";
+			$this->_stateFile = $this->_config->state_file;
 			if (!file_exists($this->_stateFile)) {
 				touch($this->_stateFile);
 			}
@@ -137,7 +138,11 @@ Class LogParser
 			throw new Exception($errstr, $errno);
 		}
 		foreach ($stats as $row) {
-			fwrite($socket, $this->_config->graphite->label . $row . " {$this->_config->graphite->increment} " . time() . "\n");
+			$timestamp = strtotime($row['time']);
+			if ($timestamp === false) {
+				$timestamp = time();
+			}
+			fwrite($socket, $this->_config->graphite->label . $row['stat'] . " {$this->_config->graphite->increment} " . $timestamp . "\n");
 		}
 		fclose($socket);
 	}
