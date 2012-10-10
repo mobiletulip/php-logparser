@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <config>
     <!-- With debugging enabled no data will be send to Graphite but instead pushed to stdout -->
-    <debug>true</debug>
+    <debug>false</debug>
+    
+    <!-- Push output to stdout -->
+    <verbose>true</verbose>
     
     <!-- Location where we should store the state file -->
     <state_file>/state/file/location.state</state_file>

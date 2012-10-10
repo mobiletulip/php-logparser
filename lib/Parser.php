@@ -45,6 +45,8 @@ Class LogParser
 	 */
 	private $_debug = false;
 	
+	private $_verbose = false;
+	
 	/**
 	 * Setup some basic stuff here
 	 * 
@@ -63,9 +65,14 @@ Class LogParser
 			throw new Exception("Logtail not found ({$this->_config->logtail_bin}) or not set");
 		}
 		
-		if ($this->_isEnabled($this->_config->debug)) {
+		if ($this->_isTrue($this->_config->debug)) {
 			$this->_debug = true;
 		}
+		
+		if ($this->_isTrue($this->_config->verbose)) {
+			$this->_verbose = true;
+		}
+		
 		$this->_setStateFile();
 	}
 	
@@ -113,7 +120,7 @@ Class LogParser
 			}
 		}
 		
-		if ($this->_isEnabled($this->_config->graphite->enabled)) {
+		if ($this->_isTrue($this->_config->graphite->enabled)) {
 			$this->_sendToGraphite($stats);
 		}
 		return $stats;
@@ -148,14 +155,26 @@ Class LogParser
 			throw new Exception($errstr, $errno);
 		}
 		foreach ($stats as $name => $value) {
-			if ($this->_debug) {
-				echo date('Y-m-d H:i:s') ." : " . $this->_config->graphite->label . $name . " {$value} " . time() . "\n";
-			}
-			else {
+			if (!$this->_debug) {
 				fwrite($socket, $this->_config->graphite->label . $name . " {$value} " . time() . "\n");
+			}
+			if ($this->_verbose || $this->_debug) {
+				echo $this->_stdOut($name, $value);
 			}
 		}
 		fclose($socket);
+	}
+	
+	/**
+	 * Return output for stdout
+	 * 
+	 * @param string $name
+	 * @param integer $value
+	 * @return string
+	 */
+	private function _stdOut($name, $value)
+	{
+		return date('Y-m-d H:i:s') ." : " . $this->_config->graphite->label . $name . " {$value} " . time() . "\n";
 	}
 	
 	/**
@@ -165,7 +184,7 @@ Class LogParser
 	 * @param string $state
 	 * @return boolean
 	 */
-	private function _isEnabled($state) 
+	private function _isTrue($state) 
 	{
 		switch ($state) {
 			case 'true': return true;
