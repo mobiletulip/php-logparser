@@ -93,16 +93,20 @@ Class LogParser
 		$logOutput = shell_exec($this->_config->logtail_bin . " -f " . $this->_config->log_file . " -o " . $this->_stateFile);
 		$outputArray = explode("\n", $logOutput);
 		
+		$statCounter = 0;
 		foreach ($outputArray as $line) {
 			preg_match_all((string) $this->_config->regexp, $line, $matches);
 			if (isset($matches[0][0])) {
-				$stats[] = array(
-					'stat' => $matches[(integer) $this->_config->regex_num][0],
-					'time' => $matches[1][0] . " " . $matches[2][0]
-				);
+				$index = $matches[(integer) $this->_config->regex_num][0];
+				if (!isset($stats[$index])) {
+					$stats[$index] = 1;
+				}
+				else {
+					$stats[$index]++;
+				}
 			}
 		}
-
+		
 		if ($this->_isEnabled($this->_config->graphite->enabled)) {
 			$this->_sendToGraphite($stats);
 		}
@@ -137,12 +141,8 @@ Class LogParser
 		if (!$socket) {
 			throw new Exception($errstr, $errno);
 		}
-		foreach ($stats as $row) {
-			$timestamp = strtotime($row['time']);
-			if ($timestamp === false) {
-				$timestamp = time();
-			}
-			fwrite($socket, $this->_config->graphite->label . $row['stat'] . " {$this->_config->graphite->increment} " . $timestamp . "\n");
+		foreach ($stats as $name => $value) {
+			fwrite($socket, $this->_config->graphite->label . $name . " {$value} " . time() . "\n");
 		}
 		fclose($socket);
 	}
