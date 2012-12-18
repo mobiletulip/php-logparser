@@ -203,11 +203,11 @@ Class LogParser
 					'password'   => $warning_config->provider->username,
 					'gateway'    => (isset($warning_config->provider->gateway) ? $warning_config->provider->gateway : NULL),
 					'recipients' => $warning_config->recipients,
-					'message'    => trim($warning_config->message . ":" . $warning_message),
+					'message'    => trim($warning_config->message . ': ' . $warning_message),
 					'type'       => 'long',
 				);
 
-			print('http://www.mollie.nl/xml/sms/?' . http_build_query($query_parts));
+			file_get_contents('http://www.mollie.nl/xml/sms/?' . http_build_query($query_parts));
 		}
 	}
 	

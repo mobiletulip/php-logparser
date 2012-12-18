@@ -2,7 +2,7 @@ A simple logfile parser for kannel SMPP logfiles that sends statistics to Graphi
 
 Running the parser:
 
-$ php sample.php --xml sample.xml
+$ php parse.php --xml sample.xml
 
 A simple cron script example parser:
 
@@ -20,7 +20,7 @@ try {
     echo $e->getMessage();
 }
 
-Where ../config/smpp-failed.xml looks like:
+Where ../config/sample.xml looks like:
 
 <?xml version="1.0" encoding="UTF-8"?>
 <config>
