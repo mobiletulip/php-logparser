@@ -182,6 +182,8 @@ Class LogParser
 	 */
 	private function _sendWarningViaSms ($stats)
 	{
+		$warning_repeat_minutes = 30;
+
 		$warning_config  = $this->_config->sms_warning;
 		$warning_amount  = 0;
 		$warning_needles = (array) $warning_config->needles->needle;
@@ -198,22 +200,48 @@ Class LogParser
 
 		if ($warning_amount >= $warning_config->threshold)
 		{
+			// Check if state file if defined and if message should be send
+			$last_warning_time = 0;
+			if (isset($warning_config->state_file) && $warning_config->state_file)
+			{
+				if (file_exists($warning_config->state_file))
+				{
+					$last_warning_time = file_get_contents($warning_config->state_file);
+				}
+				else
+				{
+					file_put_contents($warning_config->state_file, 0);
+				}
+			}
+
+			// Define message that should be send
 			$message = trim((string) $warning_config->message . ': ' . $warning_message);
 
-			$query_parts = array(
-					'username'   => (string) $warning_config->provider->username,
-					'password'   => (string) $warning_config->provider->password,
-					'gateway'    => (isset($warning_config->provider->gateway) ? (string) $warning_config->provider->gateway : NULL),
-					'originator' => (string) $warning_config->provider->originator,
-					'recipients' => (string) $warning_config->recipients,
-					'message'    => $message,
-					'type'       => 'long',
-				);
+			// More than $warning_repeat_minutes mins ago since last warning?
+			if ($last_warning_time < (time() - 60 * $warning_repeat_minutes))
+			{
+				// Send message
+				$query_parts = array(
+						'username'   => (string) $warning_config->provider->username,
+						'password'   => (string) $warning_config->provider->password,
+						'gateway'    => (isset($warning_config->provider->gateway) ? (string) $warning_config->provider->gateway : NULL),
+						'originator' => (string) $warning_config->provider->originator,
+						'recipients' => (string) $warning_config->recipients,
+						'message'    => $message,
+						'type'       => 'long',
+					);
+				file_get_contents('http://www.mollie.nl/xml/sms/?' . http_build_query($query_parts));
 
-			file_get_contents('http://www.mollie.nl/xml/sms/?' . http_build_query($query_parts));
+				// Save unixtime when warning was sent
+				file_put_contents($warning_config->state_file, time());
 
-			if ($this->_verbose || $this->_debug) {
-				echo $this->_stdOut('Sent SMS warning: ' . $message);
+				if ($this->_verbose || $this->_debug) {
+					echo $this->_stdOut('Sent SMS warning: ' . $message);
+				}
+			}
+			elseif ($this->_verbose || $this->_debug)
+			{
+				echo $this->_stdOut('No SMS warning sent (last warning less than ' . $warning_repeat_minutes . ' mins ago): ' . $message);
 			}
 		}
 	}

@@ -33,6 +33,8 @@
     <!-- SMS warning settings -->
     <sms_warning>
         <enabled>true</enabled>
+        <!-- Location where we should store the last message time state file -->
+        <state_file>/state/file/location.state</state_file>
         <threshold>10</threshold>
         <!-- For which values of regexp_num result should be send a SMS -->
         <needles>
