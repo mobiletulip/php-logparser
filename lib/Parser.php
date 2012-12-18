@@ -202,7 +202,7 @@ Class LogParser
 
 			$query_parts = array(
 					'username'   => (string) $warning_config->provider->username,
-					'password'   => (string) $warning_config->provider->username,
+					'password'   => (string) $warning_config->provider->password,
 					'gateway'    => (isset($warning_config->provider->gateway) ? (string) $warning_config->provider->gateway : NULL),
 					'originator' => (string) $warning_config->provider->originator,
 					'recipients' => (string) $warning_config->recipients,
