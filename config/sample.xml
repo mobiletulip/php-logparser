@@ -29,4 +29,24 @@
         <port>2003</port>
         <timeout>30</timeout>
     </graphite>
+
+    <!-- SMS warning settings -->
+    <sms_warning>
+        <enabled>true</enabled>
+        <threshold>10</threshold>
+        <!-- For which values of regexp_num result should be send a SMS -->
+        <needles>
+            <needle>bind_transceiver</needle>
+            <needle>bind_receiver</needle>
+        </needles>
+        <message>Warning FAILED BINDS</message>
+        <!-- Mollie SMS credentials -->
+        <provider>
+            <username>username</username>
+            <password>password</password>
+            <gateway>2</gateway>
+        </provider>
+        <!-- Phone numbers - multiple comma separated -->
+        <recipients>+31123456789</recipients>
+    </sms_warning>
 </config>

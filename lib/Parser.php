@@ -46,13 +46,13 @@ Class LogParser
 	private $_debug = false;
 	
 	private $_verbose = false;
-	
+
 	/**
 	 * Setup some basic stuff here
-	 * 
-	 * @param string $config
+	 *
+	 * @param $config string
 	 * @throws Exception
-	 * @return void
+	 * @return \LogParser
 	 */
 	private function __construct($config = null) 
 	{
@@ -93,7 +93,8 @@ Class LogParser
 	
 	/**
 	 * Run the parser and use logtail to fetch data from the logfile
-	 * 
+	 *
+	 * @throws Exception
 	 * @return array
 	 */
 	public function run() 
@@ -105,8 +106,7 @@ Class LogParser
 
 		$logOutput = shell_exec($this->_config->logtail_bin . " -f " . $this->_config->log_file . " -o " . $this->_stateFile);
 		$outputArray = explode("\n", $logOutput);
-		
-		$statCounter = 0;
+
 		foreach ($outputArray as $line) {
 			preg_match_all((string) $this->_config->regexp, $line, $matches);
 			if (isset($matches[0][0])) {
@@ -120,9 +120,16 @@ Class LogParser
 			}
 		}
 		
-		if ($this->_isTrue($this->_config->graphite->enabled)) {
+		if (isset($this->_config->graphite) && $this->_isTrue($this->_config->graphite->enabled))
+		{
 			$this->_sendToGraphite($stats);
 		}
+
+		if (isset($this->_config->sms_warning) && $this->_isTrue($this->_config->sms_warning->enabled))
+		{
+			$this->_sendWarningViaSms($stats);
+		}
+
 		return $stats;
 	}
 	
@@ -163,6 +170,45 @@ Class LogParser
 			}
 		}
 		fclose($socket);
+	}
+
+	/**
+	 * Send warning to SMS provider (Mollie) when number of regexp hits is at or over threshold
+	 * Mollie SMS API user required
+	 *
+	 * @param array $stats
+	 * @throws Exception
+	 * @return void
+	 */
+	private function _sendWarningViaSms ($stats)
+	{
+		$warning_config  = $this->_config->sms_warning;
+		$warning_amount  = 0;
+		$warning_needles = (array) $warning_config->needles->needle;
+		$warning_message = '';
+
+		foreach ($stats as $key => $value)
+		{
+			if (in_array($key, $warning_needles))
+			{
+				$warning_amount  += $value;
+				$warning_message .= $value . ' (' . $key . ') ';
+			}
+		}
+
+		if ($warning_amount >= $warning_config->threshold)
+		{
+			$query_parts = array(
+					'username'   => $warning_config->provider->username,
+					'password'   => $warning_config->provider->username,
+					'gateway'    => (isset($warning_config->provider->gateway) ? $warning_config->provider->gateway : NULL),
+					'recipients' => $warning_config->recipients,
+					'message'    => trim($warning_config->message . ":" . $warning_message),
+					'type'       => 'long',
+				);
+
+			print('http://www.mollie.nl/xml/sms/?' . http_build_query($query_parts));
+		}
 	}
 	
 	/**
