@@ -204,6 +204,7 @@ Class LogParser
 					'username'   => $warning_config->provider->username,
 					'password'   => $warning_config->provider->username,
 					'gateway'    => (isset($warning_config->provider->gateway) ? $warning_config->provider->gateway : NULL),
+					'originator' => $warning_config->provider->originator,
 					'recipients' => $warning_config->recipients,
 					'message'    => $message,
 					'type'       => 'long',

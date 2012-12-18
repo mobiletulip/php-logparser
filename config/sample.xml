@@ -45,6 +45,7 @@
             <username>username</username>
             <password>password</password>
             <gateway>2</gateway>
+            <originator>originator</originator>
         </provider>
         <!-- Phone numbers - multiple comma separated -->
         <recipients>+31123456789</recipients>
