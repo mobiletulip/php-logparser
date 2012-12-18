@@ -166,7 +166,7 @@ Class LogParser
 				fwrite($socket, $this->_config->graphite->label . $name . " {$value} " . time() . "\n");
 			}
 			if ($this->_verbose || $this->_debug) {
-				echo $this->_stdOut($name, $value);
+				echo $this->_stdOutGraphite($name, $value);
 			}
 		}
 		fclose($socket);
@@ -198,29 +198,46 @@ Class LogParser
 
 		if ($warning_amount >= $warning_config->threshold)
 		{
+			$message = trim($warning_config->message . ': ' . $warning_message);
+
 			$query_parts = array(
 					'username'   => $warning_config->provider->username,
 					'password'   => $warning_config->provider->username,
 					'gateway'    => (isset($warning_config->provider->gateway) ? $warning_config->provider->gateway : NULL),
 					'recipients' => $warning_config->recipients,
-					'message'    => trim($warning_config->message . ': ' . $warning_message),
+					'message'    => $message,
 					'type'       => 'long',
 				);
 
 			file_get_contents('http://www.mollie.nl/xml/sms/?' . http_build_query($query_parts));
+
+			if ($this->_verbose || $this->_debug) {
+				echo $this->_stdOut('Sent SMS warning: ' . $message);
+			}
 		}
 	}
-	
+
 	/**
-	 * Return output for stdout
-	 * 
+	 * Return output for graphite data to stdout
+	 *
 	 * @param string $name
 	 * @param integer $value
 	 * @return string
 	 */
-	private function _stdOut($name, $value)
+	private function _stdOutGraphite($name, $value)
 	{
-		return date('Y-m-d H:i:s') ." : " . $this->_config->graphite->label . $name . " {$value} " . time() . "\n";
+		return $this->_stdOut($this->_config->graphite->label . $name . " {$value} " . time());
+	}
+
+	/**
+	 * Return output for stdout
+	 * 
+	 * @param string $value
+	 * @return string
+	 */
+	private function _stdOut($value)
+	{
+		return date('Y-m-d H:i:s') . ": " . $value . "\n";
 	}
 	
 	/**
