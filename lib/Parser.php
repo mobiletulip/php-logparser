@@ -182,7 +182,7 @@ Class LogParser
 	 */
 	private function _sendWarningViaSms ($stats)
 	{
-		$warning_repeat_minutes = 30;
+		$warning_repeat_minutes = 15;
 
 		$warning_config  = $this->_config->sms_warning;
 		$warning_amount  = 0;
