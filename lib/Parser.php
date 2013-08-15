@@ -222,15 +222,15 @@ Class LogParser
 			{
 				// Send message
 				$query_parts = array(
-						'username'   => (string) $warning_config->provider->username,
-						'password'   => (string) $warning_config->provider->password,
-						'gateway'    => (isset($warning_config->provider->gateway) ? (string) $warning_config->provider->gateway : NULL),
-						'originator' => (string) $warning_config->provider->originator,
-						'recipients' => (string) $warning_config->recipients,
-						'message'    => $message,
-						'type'       => 'long',
-					);
-				file_get_contents('http://www.mollie.nl/xml/sms/?' . http_build_query($query_parts));
+					'username'   => (string) $warning_config->provider->username,
+					'password'   => (string) $warning_config->provider->password,
+					'gateway'    => (isset($warning_config->provider->gateway) ? (string) $warning_config->provider->gateway : NULL),
+					'originator' => (string) $warning_config->provider->originator,
+					'recipients' => (string) $warning_config->recipients,
+					'message'    => $message,
+					'type'       => 'long',
+				);
+				file_get_contents('http://api.mobiletulip.com/xml/sms/?' . http_build_query($query_parts));
 
 				// Save unixtime when warning was sent
 				file_put_contents($warning_config->state_file, time());
