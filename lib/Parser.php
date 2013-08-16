@@ -45,6 +45,11 @@ Class LogParser
 	 */
 	private $_debug = false;
 	
+	/**
+	 * Verbose output switch
+	 * 
+	 * @var boolean
+	 */
 	private $_verbose = false;
 
 	/**
@@ -56,20 +61,24 @@ Class LogParser
 	 */
 	private function __construct($config = null) 
 	{
-		if (is_null($config) || !file_exists($config)) {
+		if (is_null($config) || !file_exists($config)) 
+		{
 			throw new Exception("Could not find config file");
 		}
 		
 		$this->_config = new SimpleXMLElement(file_get_contents($config));
-		if (!$this->_config->logtail_bin || !file_exists($this->_config->logtail_bin)) {
+		if (!$this->_config->logtail_bin || !file_exists($this->_config->logtail_bin)) 
+		{
 			throw new Exception("Logtail not found ({$this->_config->logtail_bin}) or not set");
 		}
 		
-		if ($this->_isTrue($this->_config->debug)) {
+		if ($this->_isTrue($this->_config->debug)) 
+		{
 			$this->_debug = true;
 		}
 		
-		if ($this->_isTrue($this->_config->verbose)) {
+		if ($this->_isTrue($this->_config->verbose)) 
+		{
 			$this->_verbose = true;
 		}
 		
@@ -84,10 +93,12 @@ Class LogParser
 	 */
 	public static function getInstance($config = null) 
 	{
-		if (is_null(self::$_instance)) {
+		if (is_null(self::$_instance)) 
+		{
 			$configPath = dirname(__DIR__)."/config/".$config;
 			self::$_instance = new self($configPath);
 		}
+		
 		return self::$_instance;
 	}
 	
@@ -100,18 +111,22 @@ Class LogParser
 	public function run() 
 	{
 		$stats = array();
-		if (!file_exists($this->_config->log_file)) {
+		if (!file_exists($this->_config->log_file)) 
+		{
 			throw new Exception("Logfile not found");
 		}
 
 		$logOutput = shell_exec($this->_config->logtail_bin . " -f " . $this->_config->log_file . " -o " . $this->_stateFile);
 		$outputArray = explode("\n", $logOutput);
 
-		foreach ($outputArray as $line) {
+		foreach ($outputArray as $line) 
+		{
 			preg_match_all((string) $this->_config->regexp, $line, $matches);
-			if (isset($matches[0][0])) {
+			if (isset($matches[0][0])) 
+			{
 				$index = $matches[(integer) $this->_config->regex_num][0];
-				if (!isset($stats[$index])) {
+				if (!isset($stats[$index])) 
+				{
 					$stats[$index] = 1;
 				}
 				else {
@@ -140,9 +155,11 @@ Class LogParser
 	 */
 	private function _setStateFile() 
 	{
-		if (is_null($this->_stateFile)) {
+		if (is_null($this->_stateFile)) 
+		{
 			$this->_stateFile = $this->_config->state_file;
-			if (!file_exists($this->_stateFile)) {
+			if (!file_exists($this->_stateFile)) 
+			{
 				if (!is_dir(dirname($this->_stateFile)))
 				{
 					if (!@mkdir(dirname($this->_stateFile), 0, true))
@@ -165,17 +182,23 @@ Class LogParser
 	private function _sendToGraphite($stats) 
 	{
 		$socket = fsockopen($this->_config->graphite->host, (integer) $this->_config->graphite->port, $errno, $errstr, (integer) $this->_config->graphite->timeout);
-		if (!$socket) {
+		if (!$socket) 
+		{
 			throw new Exception($errstr, $errno);
 		}
-		foreach ($stats as $name => $value) {
-			if (!$this->_debug) {
+		
+		foreach ($stats as $name => $value) 
+		{
+			if (!$this->_debug) 
+			{
 				fwrite($socket, $this->_config->graphite->label . $name . " {$value} " . time() . "\n");
 			}
-			if ($this->_verbose || $this->_debug) {
+			if ($this->_verbose || $this->_debug) 
+			{
 				echo $this->_stdOutGraphite($name, $value);
 			}
 		}
+		
 		fclose($socket);
 	}
 
@@ -207,7 +230,6 @@ Class LogParser
 
 		if ($warning_amount >= $warning_config->threshold)
 		{
-			// Check if state file if defined and if message should be send
 			$last_warning_time = 0;
 			if (isset($warning_config->state_file) && $warning_config->state_file)
 			{
@@ -221,13 +243,10 @@ Class LogParser
 				}
 			}
 
-			// Define message that should be send
 			$message = trim((string) $warning_config->message . ': ' . $warning_message);
 
-			// More than $warning_repeat_minutes mins ago since last warning?
 			if ($last_warning_time < (time() - 60 * $warning_repeat_minutes))
 			{
-				// Send message
 				$query_parts = array(
 					'username'   => (string) $warning_config->provider->username,
 					'password'   => (string) $warning_config->provider->password,
@@ -237,12 +256,12 @@ Class LogParser
 					'message'    => $message,
 					'type'       => 'long',
 				);
+				
 				file_get_contents($warning_config->api_url . http_build_query($query_parts));
-
-				// Save unixtime when warning was sent
 				file_put_contents($warning_config->state_file, time());
 
-				if ($this->_verbose || $this->_debug) {
+				if ($this->_verbose || $this->_debug) 
+				{
 					echo $this->_stdOut('Sent SMS warning: ' . $message);
 				}
 			}
@@ -285,7 +304,8 @@ Class LogParser
 	 */
 	private function _isTrue($state) 
 	{
-		switch ($state) {
+		switch ($state) 
+		{
 			case 'true': return true;
 			case 'false': return false;
 		}
