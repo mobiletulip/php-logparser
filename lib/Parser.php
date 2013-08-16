@@ -143,6 +143,13 @@ Class LogParser
 		if (is_null($this->_stateFile)) {
 			$this->_stateFile = $this->_config->state_file;
 			if (!file_exists($this->_stateFile)) {
+				if (!is_dir(dirname($this->_stateFile)))
+				{
+					if (!@mkdir(dirname($this->_stateFile), 0, true))
+					{
+						throw new Exception('Failed to create statefile directory');
+					}
+				}
 				touch($this->_stateFile);
 			}
 		}
@@ -230,7 +237,7 @@ Class LogParser
 					'message'    => $message,
 					'type'       => 'long',
 				);
-				file_get_contents('http://api.mobiletulip.com/xml/sms/?' . http_build_query($query_parts));
+				file_get_contents($warning_config->api_url . http_build_query($query_parts));
 
 				// Save unixtime when warning was sent
 				file_put_contents($warning_config->state_file, time());
