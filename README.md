@@ -1,13 +1,13 @@
-A simple logfile parser for kannel SMPP logfiles that sends statistics to Graphite
+SmppBox Log Parser for kannel that sends statistics to Graphite
 
 [![Current build Status](https://api.travis-ci.org/tlenss/php-logparser.png)](https://travis-ci.org/tlenss/php-logparser)
 
 Running the parser:
-
+```shell
 $ php parse.php --xml sample.xml
-
+```
 A simple cron script example parser:
-
+```php
 require_once dirname(__DIR__) . '/lib/Parser.php';
 
 if (!isset($_SERVER['argv']))
@@ -26,9 +26,9 @@ try {
 } catch(Exception $e) {
 	echo $e->getMessage();
 }
-
+```
 Where ../config/sample.xml looks like:
-
+```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <config>
     <!-- With debugging enabled no data will be send to Graphite but instead pushed to stdout -->
@@ -86,3 +86,4 @@ Where ../config/sample.xml looks like:
         <recipients>+31123456789</recipients>
     </sms_warning>
 </config>
+```
