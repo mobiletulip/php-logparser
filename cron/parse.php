@@ -1,10 +1,15 @@
 <?php
-$basePath = dirname(__DIR__);
-require_once $basePath . '/lib/Parser.php';
+require_once dirname(__DIR__) . '/lib/Parser.php';
 
-$script = array_shift($argv);
-$switch = array_shift($argv);
-$xmlConfig = array_shift($argv);
+if (!isset($_SERVER['argv']))
+{
+	echo "ARGV is not available\n";
+	exit;
+}
+
+$script = array_shift($_SERVER['argv']);
+$switch = array_shift($_SERVER['argv']);
+$xmlConfig = array_shift($_SERVER['argv']);
 
 try {
 	$parser = LogParser::getInstance($xmlConfig);

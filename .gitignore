@@ -1,0 +1,9 @@
+# This is a shared .gitignore file for ALL MT developers
+# Please add your own personal ignores to .git/info/exclude, not in here!
+
+.DS_Store
+cache.properties
+.buildpath
+.project
+.settings
+.idea
