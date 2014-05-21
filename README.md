@@ -1,5 +1,7 @@
 A simple logfile parser for kannel SMPP logfiles that sends statistics to Graphite
 
+[![Current build Status](https://api.travis-ci.org/tlenss/php-logparser.png)](https://travis-ci.org/tlenss/php-logparser)
+
 Running the parser:
 
 $ php parse.php --xml sample.xml
