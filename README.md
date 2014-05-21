@@ -1,6 +1,6 @@
 SmppBox Log Parser for kannel that sends statistics to Graphite
 
-[![Current build Status](https://api.travis-ci.org/tlenss/php-logparser.png)](https://travis-ci.org/tlenss/php-logparser)
+[![Current build Status](https://api.travis-ci.org/tlenss/SBLP.png)](https://travis-ci.org/tlenss/SBLP)
 
 Running the parser:
 ```shell
